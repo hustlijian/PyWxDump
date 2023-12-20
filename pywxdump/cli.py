@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-#
 # -------------------------------------------------------------------------------
 # Name:         main.py.py
-# Description:  
+# Description:
 # Author:       xaoyaoo
 # Date:         2023/10/14
 # -------------------------------------------------------------------------------
 import argparse
 import os
 import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 
 from pywxdump import *
 import pywxdump
@@ -22,16 +25,21 @@ wxdump_ascii = r"""
 """
 
 
+
 class MainBiasAddr():
     def init_parses(self, parser):
         self.mode = "bias"
         # 添加 'bias_addr' 子命令解析器
         sb_bias_addr = parser.add_parser(self.mode, help="获取微信基址偏移")
-        sb_bias_addr.add_argument("--mobile", type=str, help="手机号", metavar="", required=True)
-        sb_bias_addr.add_argument("--name", type=str, help="微信昵称", metavar="", required=True)
-        sb_bias_addr.add_argument("--account", type=str, help="微信账号", metavar="", required=True)
+        sb_bias_addr.add_argument(
+            "--mobile", type=str, help="手机号", metavar="", required=True)
+        sb_bias_addr.add_argument(
+            "--name", type=str, help="微信昵称", metavar="", required=True)
+        sb_bias_addr.add_argument(
+            "--account", type=str, help="微信账号", metavar="", required=True)
         sb_bias_addr.add_argument("--key", type=str, metavar="", help="(可选)密钥")
-        sb_bias_addr.add_argument("--db_path", type=str, metavar="", help="(可选)已登录账号的微信文件夹路径")
+        sb_bias_addr.add_argument(
+            "--db_path", type=str, metavar="", help="(可选)已登录账号的微信文件夹路径")
         sb_bias_addr.add_argument("-vlp", '--version_list_path', type=str, metavar="",
                                   help="(可选)微信版本偏移文件路径,如有，则自动更新",
                                   default=None)
@@ -92,7 +100,8 @@ class MainWxDbPath():
         msg_dir = args.wx_files
         wxid = args.wxid
 
-        user_dirs = get_wechat_db(require_list, msg_dir, wxid, True)  # 获取微信数据库路径
+        user_dirs = get_wechat_db(
+            require_list, msg_dir, wxid, True)  # 获取微信数据库路径
         return user_dirs
 
 
@@ -101,8 +110,10 @@ class MainDecrypt():
         self.mode = "decrypt"
         # 添加 'decrypt' 子命令解析器
         sb_decrypt = parser.add_parser(self.mode, help="解密微信数据库")
-        sb_decrypt.add_argument("-k", "--key", type=str, help="密钥", required=True, metavar="")
-        sb_decrypt.add_argument("-i", "--db_path", type=str, help="数据库路径(目录or文件)", required=True, metavar="")
+        sb_decrypt.add_argument("-k", "--key", type=str,
+                                help="密钥", required=True, metavar="")
+        sb_decrypt.add_argument(
+            "-i", "--db_path", type=str, help="数据库路径(目录or文件)", required=True, metavar="")
         sb_decrypt.add_argument("-o", "--out_path", type=str, default=os.path.join(os.getcwd(), "decrypted"),
                                 help="输出路径(必须是目录)[默认为当前路径下decrypted文件夹]", required=False,
                                 metavar="")
@@ -131,9 +142,12 @@ class MainMerge():
     def init_parses(self, parser):
         self.mode = "merge"
         # 添加 'decrypt' 子命令解析器
-        sb_merge = parser.add_parser(self.mode, help="[测试功能]合并微信数据库(MSG.db or MediaMSG.db)")
-        sb_merge.add_argument("-i", "--db_path", type=str, help="数据库路径(文件路径，使用英文[,]分割)", required=True,
-                              metavar="")
+        sb_merge = parser.add_parser(
+            self.mode, help="合并微信数据库(MSG.db or MediaMSG.db)")
+        sb_merge.add_argument("-t", "--dbtype", type=str,
+                              help="数据库类型(可选值)：[msg,media]", required=True, metavar="")
+        sb_merge.add_argument("-i", "--db_path", type=str,
+                              help="数据库路径(文件路径，使用英文[,]分割)", required=True, metavar="")
         sb_merge.add_argument("-o", "--out_path", type=str, default=os.path.join(os.getcwd(), "decrypted"),
                               help="输出路径(目录或文件名)[默认为当前路径下decrypted文件夹下merge_***.db]",
                               required=False,
@@ -197,7 +211,8 @@ class MainShowChatRecords():
 
         if not os.path.exists(args.msg_path) or not os.path.exists(args.micro_path) or not os.path.exists(
                 args.media_path):
-            print(os.path.exists(args.msg_path), os.path.exists(args.micro_path), os.path.exists(args.media_path))
+            print(os.path.exists(args.msg_path), os.path.exists(
+                args.micro_path), os.path.exists(args.media_path))
             print("[-] 输入数据库路径不存在")
             return
 
@@ -224,8 +239,10 @@ class MainExportChatRecords():
         self.mode = "export"
         # 添加 'decrypt' 子命令解析器
         sb_decrypt = parser.add_parser(self.mode, help="聊天记录导出为html")
-        sb_decrypt.add_argument("-u", "--username", type=str, help="微信账号(聊天对象账号)", required=True, metavar="")
-        sb_decrypt.add_argument("-o", "--outpath", type=str, help="导出路径", required=True, metavar="")
+        sb_decrypt.add_argument(
+            "-u", "--username", type=str, help="微信账号(聊天对象账号)", required=True, metavar="")
+        sb_decrypt.add_argument(
+            "-o", "--outpath", type=str, help="导出路径", required=True, metavar="")
         sb_decrypt.add_argument("-msg", "--msg_path", type=str, help="解密后的 MSG.db 的路径", required=True,
                                 metavar="")
         sb_decrypt.add_argument("-micro", "--micro_path", type=str, help="解密后的 MicroMsg.db 的路径", required=True,
@@ -249,7 +266,8 @@ class MainExportChatRecords():
 
         if not os.path.exists(args.msg_path) or not os.path.exists(args.micro_path) or not os.path.exists(
                 args.media_path):
-            print(os.path.exists(args.msg_path), os.path.exists(args.micro_path), os.path.exists(args.media_path))
+            print(os.path.exists(args.msg_path), os.path.exists(
+                args.micro_path), os.path.exists(args.media_path))
             print("[-] 输入数据库路径不存在")
             return
 
@@ -257,7 +275,8 @@ class MainExportChatRecords():
             os.makedirs(args.outpath)
             print(f"[+] 创建输出文件夹：{args.outpath}")
 
-        export(args.username, args.outpath, args.msg_path, args.micro_path, args.media_path, args.filestorage_path)
+        export(args.username, args.outpath, args.msg_path,
+               args.micro_path, args.media_path, args.filestorage_path)
         print(f"[+] 导出成功{args.outpath}")
 
 
@@ -280,11 +299,13 @@ class MainAll():
             wxid = user.get("wxid", None)
             filePath = user.get("filePath", None)
 
-            WxDbPath = get_wechat_db('all', None, wxid=wxid, is_logging=True)  # 获取微信数据库路径
+            WxDbPath = get_wechat_db(
+                'all', None, wxid=wxid, is_logging=True)  # 获取微信数据库路径
             if isinstance(WxDbPath, str):  # 如果返回的是字符串，则表示出错
                 print(WxDbPath)
                 return
-            wxdbpaths = [path for user_dir in WxDbPath.values() for paths in user_dir.values() for path in paths]
+            wxdbpaths = [path for user_dir in WxDbPath.values()
+                         for paths in user_dir.values() for path in paths]
             if len(wxdbpaths) == 0:
                 print("[-] 未获取到数据库路径")
                 return
@@ -293,7 +314,8 @@ class MainAll():
             print(f"[+] 共发现 {wxdblen} 个微信数据库")
             print("=" * 32)
 
-            out_path = os.path.join(os.getcwd(), "decrypted", wxid) if wxid else os.path.join(os.getcwd(), "decrypted")
+            out_path = os.path.join(os.getcwd(), "decrypted", wxid) if wxid else os.path.join(
+                os.getcwd(), "decrypted")
             print(f"[*] 解密后文件夹：{out_path} ")
             print(f"[*] 解密中...（用时较久，耐心等待）")
             if not os.path.exists(out_path):
@@ -360,9 +382,11 @@ class CustomArgumentParser(argparse.ArgumentParser):
         # 首先显示软件简介
         # 定义软件简介文本并进行格式化
         line_len = 70
-        PYWXDUMP_VERSION = pywxdump.__version__
-        wxdump_line = '\n'.join([f'\033[36m{line:^{line_len}}\033[0m' for line in wxdump_ascii.split('\n') if line])
-        first_line = f'\033[36m{" PyWxDump v" + PYWXDUMP_VERSION + " ":=^{line_len}}\033[0m'
+        PYWXDUMP_VERSION = '0.0.1'
+        wxdump_line = '\n'.join([f'\033[36m{
+                                line:^{line_len}}\033[0m' for line in wxdump_ascii.split('\n') if line])
+        first_line = f'\033[36m{" PyWxDump v" +
+                                PYWXDUMP_VERSION + " ":=^{line_len}}\033[0m'
         brief = 'PyWxDump功能：获取账号信息、解密数据库、查看聊天记录、导出聊天记录为html等'
         other = '更多详情请查看: \033[4m\033[1mhttps://github.com/xaoyaoo/PyWxDump\033[0m'
 
@@ -376,12 +400,15 @@ class CustomArgumentParser(argparse.ArgumentParser):
 
 def console_run():
     # 创建命令行参数解析器
-    parser = CustomArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
-    PYWXDUMP_VERSION = pywxdump.__version__
-    parser.add_argument('-V', '--version', action='version', version=f"PyWxDump v{PYWXDUMP_VERSION}")
+    parser = CustomArgumentParser(
+        formatter_class=argparse.RawTextHelpFormatter)
+    PYWXDUMP_VERSION = '0.0.1'
+    parser.add_argument('-V', '--version', action='version',
+                        version=f"PyWxDump v{PYWXDUMP_VERSION}")
 
     # 添加子命令解析器
-    subparsers = parser.add_subparsers(dest="mode", help="""运行模式:""", required=True, metavar="mode")
+    subparsers = parser.add_subparsers(
+        dest="mode", help="""运行模式:""", required=True, metavar="mode")
 
     modes = {}
     # 添加 'bias' 子命令解析器

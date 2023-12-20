@@ -19,6 +19,8 @@ import blackboxprotobuf
 from PIL import Image
 # import xml.etree.ElementTree as ET
 import lxml.etree as ET  # 这个模块更健壮些，微信XML格式有时有非标格式，会导致xml.etree.ElementTree处理失败
+# import xml.etree.ElementTree as ET
+import lxml.etree as ET  # 这个模块更健壮些，微信XML格式有时有非标格式，会导致xml.etree.ElementTree处理失败
 
 
 def get_md5(data):
@@ -69,7 +71,8 @@ def parse_xml_string(xml_string):
     if xml_string is None or not isinstance(xml_string, str):
         return None
     try:
-        parser = ET.XMLParser(recover=True)  # 有时微信的聊天记录里面，会冒出来xml格式不对的情况，这里把parser设置成忽略错误
+        # 有时微信的聊天记录里面，会冒出来xml格式不对的情况，这里把parser设置成忽略错误
+        parser = ET.XMLParser(recover=True)
         root = ET.fromstring(xml_string, parser)
     except Exception as e:
         return xml_string
@@ -107,10 +110,12 @@ def read_img_dat(input_data):
         for hcode in img_head:  # 遍历文件头
             t = input_bytes[0] ^ hcode[0]  # 异或解密
             if np.all(t == np.bitwise_xor(np.frombuffer(input_bytes[:len(hcode)], dtype=np.uint8),
-                                          np.frombuffer(hcode, dtype=np.uint8))):  # 使用NumPy进行向量化的异或解密操作，并进行类型转换
+                                          # 使用NumPy进行向量化的异或解密操作，并进行类型转换
+                                          np.frombuffer(hcode, dtype=np.uint8))):
                 fomt = img_head[hcode]  # 获取文件格式
 
-                out_bytes = np.bitwise_xor(input_bytes, t)  # 使用NumPy进行向量化的异或解密操作
+                out_bytes = np.bitwise_xor(
+                    input_bytes, t)  # 使用NumPy进行向量化的异或解密操作
                 md5 = get_md5(out_bytes)
                 return fomt, md5, out_bytes
         return False
@@ -166,7 +171,10 @@ def read_audio_buf(buf_data, is_play=False, is_wave=False, rate=24000):
     silk_file = BytesIO(buf_data)  # 读取silk文件
     pcm_file = BytesIO()  # 创建pcm文件
 
-    pysilk.decode(silk_file, pcm_file, rate)  # 解码silk文件->pcm文件
+    try:
+        pysilk.decode(silk_file, pcm_file, rate)  # 解码silk文件->pcm文件
+    except:
+        return ''
     pcm_data = pcm_file.getvalue()  # 获取pcm文件数据
 
     silk_file.close()  # 关闭silk文件
@@ -174,7 +182,8 @@ def read_audio_buf(buf_data, is_play=False, is_wave=False, rate=24000):
     if is_play:  # 播放音频
         def play_audio(pcm_data, rate):
             p = pyaudio.PyAudio()  # 实例化pyaudio
-            stream = p.open(format=pyaudio.paInt16, channels=1, rate=rate, output=True)  # 创建音频流对象
+            stream = p.open(format=pyaudio.paInt16, channels=1,
+                            rate=rate, output=True)  # 创建音频流对象
             stream.write(pcm_data)  # 写入音频流
             stream.stop_stream()  # 停止音频流
             stream.close()  # 关闭音频流
@@ -233,14 +242,16 @@ def wordcloud_generator(text, out_path="", is_show=False, img_path="", font="C:\
     # 字体路径
 
     # 创建WordCloud对象
-    wordcloud1 = WordCloud(width=800, height=400, background_color='white', font_path=font)
+    wordcloud1 = WordCloud(width=800, height=400,
+                           background_color='white', font_path=font)
     wordcloud1.generate(newtxt)
 
     if out_path and out_path != "":
         wordcloud1.to_file("wordcloud.png")  # 保存图片
     if img_path and os.path.exists(img_path):  # 设置背景图片
         img_color = np.array(Image.open(img_path))  # 读取背景图片
-        img_color = img_color.reshape((img_color.shape[0] * img_color.shape[1], 3))
+        img_color = img_color.reshape(
+            (img_color.shape[0] * img_color.shape[1], 3))
         wordcloud1.recolor(color_func=img_color)  # 设置背景图片颜色
     if is_show:
         # 显示词云
@@ -252,8 +263,22 @@ def read_BytesExtra(BytesExtra):
     if BytesExtra is None or not isinstance(BytesExtra, bytes):
         return None
     try:
-        deserialize_data, message_type = blackboxprotobuf.decode_message(BytesExtra)
+        deserialize_data, message_type = blackboxprotobuf.decode_message(
+            BytesExtra)
         return deserialize_data
     except Exception as e:
         return None
 
+
+if __name__ == '__main__':
+    DB = sqlite3.connect(
+        r"D:\_code\py_code\test\a2023\b0821wxdb\merge_wfwx_db\hwfWxMsg\MSG_all.db")
+    cursor = DB.cursor()
+    sql = "select MsgSvrID,CompressContent from MSG where MSG.MsgSvrID=5379391128928795712"
+    DBdata = cursor.execute(sql).fetchall()
+    for i in DBdata:
+        MsgSvrID, CompressContent = i
+        data = decompress_CompressContent(CompressContent)
+        # 提取特定键的信息
+        print(MsgSvrID, "\n", data)
+        print("-" * 64)
